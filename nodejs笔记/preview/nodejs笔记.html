@@ -1,0 +1,543 @@
+<html>
+  <head>
+    <meta
+      http-equiv="content-type"
+      content="text/html; charset=utf-8"
+    />
+    <title>i5ting_ztree_toc:nodejs笔记</title>
+    <link
+      href="toc/style/github-bf51422f4bb36427d391e4b75a1daa083c2d840e.css"
+      media="all"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="toc/style/github2-d731afd4f624c99a4b19ad69f3083cd6d02b81d5.css"
+      media="all"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="toc/css/zTreeStyle/zTreeStyle.css"
+      media="all"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <style>
+      pre {
+        counter-reset: line-numbering;
+        border: solid 1px #d9d9d9;
+        border-radius: 0;
+        background: #fff;
+        padding: 0;
+        line-height: 23px;
+        margin-bottom: 30px;
+        white-space: pre;
+        overflow-x: auto;
+        word-break: inherit;
+        word-wrap: inherit;
+      }
+
+      pre a::before {
+        content: counter(line-numbering);
+        counter-increment: line-numbering;
+        padding-right: 1em; /* space after numbers */
+        width: 25px;
+        text-align: right;
+        opacity: 0.7;
+        display: inline-block;
+        color: #aaa;
+        background: #eee;
+        margin-right: 16px;
+        padding: 2px 10px;
+        font-size: 13px;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      pre a:first-of-type::before {
+        padding-top: 10px;
+      }
+
+      pre a:last-of-type::before {
+        padding-bottom: 10px;
+      }
+
+      pre a:only-of-type::before {
+        padding: 10px;
+      }
+
+      .highlight {
+        background-color: #ffffcc;
+      } /* RIGHT */
+    </style>
+  </head>
+  <body>
+    <div>
+      <div style="width: 25%">
+        <ul
+          id="tree"
+          class="ztree"
+          style="width: 100%"
+        ></ul>
+      </div>
+      <div
+        id="readme"
+        style="width: 70%; margin-left: 20%"
+      >
+        <article class="markdown-body">
+          <h1 id="nodejs-">nodejs 笔记</h1>
+          <hr />
+          <h2 id="1-node-js">1. 什么是 node.js</h2>
+          <hr />
+          <ul>
+            <li>
+              node.js 是一个基于<strong>Chrome v8</strong>引擎的
+              javascript<strong>运行环境</strong>（相当于把 js
+              在浏览器中的运行环境提出来）
+            </li>
+            <li>可以用来做后端开发</li>
+            <li>提供了内置的一些新的接口和内置对象，不包含 dom，bom 等 api</li>
+            <li>浏览器是 js 的前端运行环境，node.js 是 js 的后端运行环境</li>
+          </ul>
+          <h2 id="2-node-js-">2. 使用 node 运行 js 代码</h2>
+          <hr />
+          <p>
+            在终端里使用 <code>node &lt;filename&gt;</code> 即可执行 js 代码
+          </p>
+          <h2 id="3-fs-">3. fs 文件系统模块</h2>
+          <hr />
+          <h3 id="3-1-">3.1 什么是文件系统模块</h3>
+          <p>
+            文件系统模块是 node.js
+            内置的一个用来操作文件系统的模块，提供了一些列的方法和属性，可以满足用户对文件的读写要求
+          </p>
+          <ul>
+            <li>fs.readFile() 用来读取文件的内容</li>
+            <li>fs.writeFile() 用来写入文件的内容</li>
+          </ul>
+          <p>使用之前要先导入 fs 模块</p>
+          <pre><code class="lang-javascript">const fs = require(&#39;fs&#39;);
+</code></pre>
+          <h3 id="3-2-">3.2 读取文件内容</h3>
+          <p>语法格式</p>
+          <pre><code class="lang-javascript">fs.readFile(path[, options], (err, data) =&gt; {
+    ...
+});
+
+// path: 文件路径，字符串形式
+// operation: （可选）以什么样的编码格式读取文件内容，默认是utf-8格式
+// 第三个参数：回调函数，成功时可以通过这个函数拿到文件内容
+//      err: 读取失败时的错误对象
+//      data: 读取成功时的文件数据
+</code></pre>
+          <h3 id="3-3-">3.3 写入文件内容</h3>
+          <p>语法格式</p>
+          <pre><code class="lang-javascript">fs.writeFile(path, data[, options], err =&gt; {
+    ...
+});
+
+// path: 文件路径字符串
+// data: 要写入的数据
+// options: （可选）以什么样的格式写入数据，默认是utf-8格式
+// callback: 不论成功还是失败，都会调用这个回调函数
+</code></pre>
+          <p>
+            如果路径字符串对应的文件不存在，那么会自动创建一个，如果存在在，则会覆盖原来的文件内容
+          </p>
+          <h3 id="3-4-">3.4 追加文件内容</h3>
+          <p>语法格式</p>
+          <pre><code class="lang-javascript">fs.appendFile(path, data[, options], err =&gt; {
+    ...
+});
+
+// 参数与writeFile()相同
+</code></pre>
+          <h2 id="4-path-">4. path 路径模块</h2>
+          <hr />
+          <h3 id="4-1-">4.1 路径动态拼接错误的问题</h3>
+          <ul>
+            <li>
+              在使用 fs
+              模块操作文件时，如果提供的路径是以<code>./</code>或者<code>../</code>开头的相对路径，很容易出现路径动态拼接错误的问题
+            </li>
+            <li>
+              原因：代码运行时会以运行 node
+              命令时所处的目录，动态拼接出文件按的完整目录
+            </li>
+            <li>解决：提供一个完整的文件路径</li>
+          </ul>
+          <h3 id="4-2-">4.2 如何提供完整的文件路径</h3>
+          <ul>
+            <li>使用<code>__dirname</code>和<code>__filename</code></li>
+            <li>__dirname：表示本文件所在的文件夹的完整目录</li>
+            <li>__filename：表示本文件的完整目录</li>
+          </ul>
+          <pre><code class="lang-javascript">// 表示当前文件夹下的xxx.json文件，可以这样写
+const path = __dirname + &#39;\\xxx.json&#39;;
+</code></pre>
+          <h3 id="path-api">path 相关 api</h3>
+          <p>使用之前要先导入 path 模块</p>
+          <pre><code class="lang-javascript">const path = require(&#39;path&#39;);
+</code></pre>
+          <h4 id="path-join-">path.join()</h4>
+          <p>将多个路径碎片拼接成一个完整路径</p>
+          <pre><code class="lang-javascript">path.join(...paths: string[]);
+
+// 注意：当paths中有../时，会回到上层的目录（抵消之前的一层路径）
+path.join(&#39;/a&#39;, &#39;/b/c&#39;, &#39;../&#39;, &#39;/e&#39;); // /a/b/e
+</code></pre>
+          <h4 id="path-basename-">path.basename()</h4>
+          <p>从路径字符串中将最后一部分解析出来，一般是文件名</p>
+          <pre><code class="lang-javascript">path.basename(path: string);
+
+// 可以使用第二个参数将扩展名移除掉
+path.basename(path: string, extendName: string);
+// 例：
+path.basename(&#39;a/b/c/test.js&#39;, &#39;.js&#39;); // test
+</code></pre>
+          <h4 id="path-extname-">path.extname()</h4>
+          <p>从路径字符串中获取文件扩展名</p>
+          <pre><code class="lang-javascript">path.extname(path: string);
+</code></pre>
+          <h2 id="5-http-">5. http 模块</h2>
+          <hr />
+          <h3 id="-domain-name-">域名的概念（domain name）</h3>
+          <ul>
+            <li>
+              域名是 ip 地址的直观名字，和 ip
+              地址一一对应，这个对应关系存放在域名解析服务器中(DNS: domain name
+              server)
+            </li>
+            <li>
+              在使用域名访问网站时，会先到域名解析服务器中查询相关
+              ip，然后对对应的 ip 进行访问
+            </li>
+            <li>例如：127.0.0.1 的域名时 localhost</li>
+          </ul>
+          <h3 id="-web-">创建最基本的 web 服务器</h3>
+          <h4 id="-">基本步骤</h4>
+          <ol>
+            <li>导入 http 模块</li>
+          </ol>
+          <pre><code class="lang-javascript">const http = require(&#39;http&#39;);
+</code></pre>
+          <ol start="2">
+            <li>创建 web 服务器实例</li>
+          </ol>
+          <pre><code class="lang-javascript">const server = http.createServer();
+</code></pre>
+          <ol start="3">
+            <li>为服务器绑定 request 事件，监听客户端请求</li>
+          </ol>
+          <pre><code class="lang-javascript">server.on(&#39;request&#39;, (req, res) =&gt; {
+  console.log(&#39;someone visit the server&#39;);
+});
+</code></pre>
+          <ol start="4">
+            <li>启动服务器</li>
+          </ol>
+          <pre><code class="lang-javascript">server.listen(3000, err =&gt; {
+  if (!err) console.log(&#39;serve start success&#39;);
+});
+</code></pre>
+          <h4 id="req-">req 请求对象</h4>
+          <p>
+            如果想在请求的时间处理函数中访问与客户端相关的数据或属性，可以使用
+            req 参数
+          </p>
+          <pre><code class="lang-javascript">server.on(&#39;request&#39;, (req, res) =&gt; {
+  // req是与请求信息有关的对象
+  // req.url是客户端请求的url
+  // req.method是客户端请求的方式
+  console.log(req.url);
+  console.log(req.method);
+});
+</code></pre>
+          <h4 id="res-">res 响应对象</h4>
+          <pre><code class="lang-javascript">server.on(&#39;request&#39;, (req, res) =&gt; {
+  // res是与服务器相关的数据和信息的对象
+  // res.end() 可以向客户端返回响应数据，并结束这次请求
+  res.end(&#39;hello http&#39;);
+});
+</code></pre>
+          <h2 id="6-">6. 模块化</h2>
+          <hr />
+          <h3 id="6-1-">6.1 模块化的基本概念</h3>
+          <ul>
+            <li>
+              模块化是指将一个复杂问题分解为若干模块，每一个模块都是可分解，可更换，可组合的单元
+            </li>
+            <li>
+              模块化的好处
+              <ul>
+                <li>提高代码的复用性</li>
+                <li>提高代码的可维护性</li>
+                <li>可以实现按需加载</li>
+              </ul>
+            </li>
+          </ul>
+          <h3 id="6-2-">6.2 模块化规范</h3>
+          <p>
+            对代码进行模块化拆分与组合时应该遵循的规则，例如如何导入一个模块，如何导出一个模块
+          </p>
+          <h3 id="6-3-nodejs-">6.3 nodejs 中的模块化</h3>
+          <p>nodejs 根据模块的来源不同，将模块分为 3 大类，分别是：</p>
+          <ul>
+            <li>内置模块</li>
+            <li>自定义模块（一个用户创建的 js 文件就是一个自定义模块）</li>
+            <li>第三方模块</li>
+          </ul>
+          <h3 id="6-4-">6.4 加载模块</h3>
+          <p>使用 require() 方法可以动态的加载这三类模块</p>
+          <h3 id="6-5-">6.5 模块作用域</h3>
+          <p>
+            和函数作用域类似，在模块中定义的变量，方法等，只能在该模块中被访问，出了该模块之后就不能被访问到了
+          </p>
+          <pre><code class="lang-javascript">// module 1
+console.log(&#39;## the module was loaded&#39;);
+
+const username = &#39;zhangsan&#39;;
+
+function do_some() {
+  console.log(username);
+}
+
+// ---------------------------------------
+
+// module 2
+const m = require(&#39;./module 1&#39;);
+
+console.log(m);
+// console.log(username); error: username is not define
+// do_some();
+</code></pre>
+          <h3 id="6-6-">6.6 如何暴露一个模块中的私有成员</h3>
+          <ol>
+            <li><p>module 对象</p></li>
+            <li>
+              <p>
+                每个.js 自定义模块中都有一个 module
+                对象，它里面存储了和当前模块有关的信息
+              </p>
+            </li>
+            <li>打印信息如下</li>
+          </ol>
+          <pre><code class="lang-javascript">  Module {
+    id: &#39;D:\\frontend_project\\nodejs\\_module\\define_module.js&#39;,
+    path: &#39;D:\\frontend_project\\nodejs\\_module&#39;,
+    exports: {},
+    filename: &#39;D:\\frontend_project\\nodejs\\_module\\define_module.js&#39;,
+    loaded: false,
+    children: [],
+    paths: [
+      &#39;D:\\frontend_project\\nodejs\\_module\\node_modules&#39;,
+      &#39;D:\\frontend_project\\nodejs\\node_modules&#39;,
+      &#39;D:\\frontend_project\\node_modules&#39;,
+      &#39;D:\\node_modules&#39;
+    ]
+  }
+</code></pre>
+          <ol start="2">
+            <li><p>module.exports 对象</p></li>
+            <li>
+              <p>
+                一个模块在被导入时，本质上就是拿到 module.exports
+                这个属性所指向的对象
+              </p>
+            </li>
+            <li>这个属性在默认情况下是一个空对象</li>
+            <li>
+              在被导入的模块中可以设置 module.exports
+              的对象属性，或者直接将其替换为一个新的对象，可以将该模块中的私有成员向外暴露
+            </li>
+          </ol>
+          <pre><code class="lang-javascript">// module 1
+const name = &#39;zhangsan&#39;;
+function do_some() {
+  /* ... */
+}
+
+// 设置module.exports的属性
+module.exports.name = name;
+module.exports.do_some = do_some;
+
+// 或者将其替换为一个新的对象
+module.exports = {
+  name,
+  do_some,
+};
+
+// ------------------------------
+
+// module 2
+const m = require(&#39;./module 1&#39;);
+
+console.log(m); // { name: &#39;zhangsan&#39;, do_some: Function }
+</code></pre>
+          <ol start="3">
+            <li><p>exports 对象</p></li>
+            <li>
+              <p>
+                使用起来和 module.exports
+                是一样的，只是后者写法比较复杂，前者简化了而已
+              </p>
+            </li>
+            <li>
+              一个注意点：module.exports 和 exports
+              的原理是两者都指向了同一个对象，如果修改了其中任何一个的指向，那么最终导入结果是
+              module.exports 指向的那个对象
+            </li>
+          </ol>
+          <h2 id="7-npm-">7. npm 与包</h2>
+          <hr />
+          <ol>
+            <li>
+              nodejs 中的<strong>第三方模块</strong>又叫做<strong>包</strong>
+            </li>
+            <li>包是由第三方个人或团队开发出来的，免费共别人使用</li>
+            <li>
+              <strong>包是由内置模块封装出来的</strong>，提供了更高级，更方便的
+              api
+            </li>
+            <li>
+              包搜索平台：<a href="https://www.npmjs.com"
+                >https://www.npmjs.com</a
+              >
+            </li>
+            <li>
+              包下载地址：<a
+                href="https://registry.npmjs.org/（可以配置国内镜像：https://registry.npm.taobao.org）"
+                >https://registry.npmjs.org/（可以配置国内镜像：https://registry.npm.taobao.org）</a
+              >
+            </li>
+            <li>
+              使用 <code>npm i &lt;完整包名&gt;</code> 来下载包到指定的项目
+            </li>
+            <li>
+              使用
+              <code>npm i &lt;完整包名&gt;@&lt;版本号&gt;</code>
+              来安装指定版本的包，如果没有指定版本号，默认安装最新的包
+            </li>
+            <li>使用 <code>npm i &lt;完整包名&gt; -g</code> 来全局安装包</li>
+          </ol>
+          <hr />
+          <p>小知识：版本号是点分十进制的形式，例如：<code>2.24.0</code></p>
+          <ol>
+            <li>第一个数字是大的更新，例如底层代码重构时会将其加一</li>
+            <li>第二个数字是添加或删除某个功能时会将其加一</li>
+            <li>修复 bug 时会将其加一</li>
+          </ol>
+          <p>
+            版本号提升规则：要前面的版本号增加了，后面的版本号要<strong
+              >归零</strong
+            >
+          </p>
+          <hr />
+          <ol start="9">
+            <li>
+              <p>包管理配置文件 <code>package.json</code></p>
+            </li>
+            <li>
+              <p>
+                npm 规定，在项目的根目录中，必须提供一个 package.json
+                的包管理配置文件，用来记录与项目有关的一些配置
+              </p>
+              <ul>
+                <li>项目名称，版本号，描述等</li>
+                <li>项目中都用到了哪些包</li>
+                <li>哪些包只在开发期间用到</li>
+                <li>哪些包在开发和部署期间都用到</li>
+              </ul>
+            </li>
+            <li>
+              在把项目上传到 github
+              时，由于第三方包是不用上传的，所以要在.gitignore 文件中配置，但是
+              package.json 文件要上传，告诉别人该项目都使用了哪些包
+            </li>
+            <li>
+              <p>
+                快速创建 package.json 文件：使用命令 <code>npm init -y</code>
+              </p>
+            </li>
+            <li><p>批量安装包</p></li>
+            <li>
+              <p>
+                如果要一次性安装多个包，可以使用
+                <code>npm i &lt;包名1&gt; &lt;包名2&gt; ...</code>
+              </p>
+            </li>
+            <li>
+              <p>
+                如果要一次性安装 package.json 中的 dependencies
+                指定的所有包，可以使用
+                <code>npm install</code> ，这个命令会去查找 package.json 中的
+                dependencies 中的所有包并全部下载
+              </p>
+            </li>
+            <li>
+              <p>
+                使用 <code>npm uninstall &lt;package name&gt;</code> 来卸载包
+              </p>
+            </li>
+            <li>
+              <p>
+                使用 <code>npm i &lt;package name&gt; -D</code> 或者
+                <code>npm i &lt;package name&gt; --save-dev</code> 将包下载到
+                devDependencies
+                中，在这个节点中的包指在开发阶段会用到，项目上线后就不会用到了
+              </p>
+            </li>
+            <li><p>包的分类：</p></li>
+            <li>
+              <p>项目包：那些被下载到 node_modules 文件夹中的包是项目包</p>
+              <ul>
+                <li>开发依赖包：被记录到 devDependencies 中的包是开发依赖包</li>
+                <li>核心依赖包：被记录到 dependencies 中的包是核心依赖包</li>
+              </ul>
+            </li>
+            <li>
+              全局包：在安装时提供一个
+              <code>-g</code> 命令，会将这个包安装到全局，全局包卸载时也要加
+              <code>-g</code> 命令
+            </li>
+            <li><p>注意：只有工具性质的包，才有全局安装的必要</p></li>
+            <li><p>i5ting_toc 工具包</p></li>
+          </ol>
+        </article>
+      </div>
+    </div>
+  </body>
+</html>
+<script
+  type="text/javascript"
+  src="toc/js/jquery-1.4.4.min.js"
+></script>
+<script
+  type="text/javascript"
+  src="toc/js/jquery.ztree.all-3.5.min.js"
+></script>
+<script
+  type="text/javascript"
+  src="toc/js/ztree_toc.js"
+></script>
+<script
+  type="text/javascript"
+  src="toc_conf.js"
+></script>
+
+<script type="text/javascript">
+  <!--
+  $(document).ready(function () {
+    var css_conf = eval(markdown_panel_style);
+    $('#readme').css(css_conf);
+
+    var conf = eval(jquery_ztree_toc_opts);
+    $('#tree').ztree_toc(conf);
+  });
+  //-->
+</script>

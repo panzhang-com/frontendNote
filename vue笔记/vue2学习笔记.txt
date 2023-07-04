@@ -1,0 +1,1662 @@
+1. 什么是vue？
+    用于构建用户界面的渐进式javascript框架
+
+    用户界面：将数据以用户可以看到的方式组织显示
+    渐进式：vue可以自底向上逐层应用（从一个轻量小巧的核心库，逐渐向各种使用插件递进）
+
+2. vue特点：
+    2.1 采用组件化模式，提高代码复用率，让代码更好维护
+    2.2 声明式编码，让编程人员无需操作dom，提高开发效率
+    2.3 使用虚拟dom+优秀的diff算法，尽量复用dom节点
+
+3. 初始Vue：
+    3.1 想让Vue工作，就必须创建一个Vue实例，且要传入一个配置对象
+    3.2 root容器中的代码依然符合html规范，只不过混入了一些Vue语法
+    3.3 root容器中的代码被称为Vue模板
+    3.3 Vue实例和容器之间是一一对应的
+    3.4 真是开发中只有一个Vue实例，并且会配合着组件一起使用
+    3.5 {{}}中可以写js的表达式，但是不能写js代码
+    3.6 Vue实例中的data中的数据发生变化时，容器中相应的地方也会发生变化
+
+4. 模板语法：
+    4.1 插值语法：{{ ... }}
+    4.2 指令语法：v-指令
+
+    插值语法常用来指定标签内的内容innerText
+    指令语法常用来解析标签（标签属性，标签体内容，绑定事件...）
+
+5. 指令语法常用指令：
+    5.1 v-bind:属性名 = '属性值' 作用：将属性值视为js表达式执行，将执行结果绑定（单向绑定）到属性名上，可以简写为 :属性名 = '属性值'
+    5.2 v-model:value = '属性值' 作用：和v-bind作用一样，最大的不同是v-model是双向绑定，v-model不能应用在没有输入功能的元素上，否则将会失去双向绑定的意义
+        v-model也有简写形式，因为它默认收集的是value值，所以可以省去value v-model = '属性值'
+
+6. 由Vue管理的函数一定不要写成箭头函数，否则其中的this都会指向Window
+
+7. MVVM模型：
+    M: model 指代的是数据对象的，该对象是一个一般的js对象，里面存放着我们要操作的数据
+    V: view 指代的是dom视图
+    VM: viewModel（视图模型） 指代的是数据对象和dom视图之间的控制层，它监听dom视图变化，将其反映到js数据对象中，并且将数据
+    对象中的数据挂载到dom视图上
+
+                             +-------------+
+    +-------+   listen dom   |             |   get and set data  +---------+
+    | view  | <------------> |  viewModel  | <-----------------> | model   |
+    +-------+                |             |                     +---------+
+                             +-------------+
+
+    对应到js代码中：
+        v: dom页面
+        m: js数据对象
+        vm: vue实例
+
+    注意：js数据对象上的属性，最终会出现到vue实例身上
+
+8. 数据代理：
+    8.1 什么是数据代理？
+        通过一个对象，代理另一个对象中的属性的操作
+
+    8.2 一个最简单的数据代理
+        const obj1 = { x: 1 }
+        const obj2 = { x: 2 }
+
+        // 使用obj2代理obj1中x的读写操作
+        Object.defineProperty(obj2, '_x', {
+            get() {
+                return obj1.x;
+            }
+
+            set(value) {
+                obj1.x = value;
+            }
+        });
+
+    8.3 Vue中的数据代理
+        Vue在创建Vue实例对象之后，会创建一个_data属性，这个属性就是创建Vue实例时的data对象
+
+        然后Vue会使用Object.defineProperty()方法将_data中的属性定义到Vue实例对象上进行数据代理，所有对Vue实例对象上的
+        属性操作都会映射到_data中，所有对_data上的属性操作也会映射到Vue实例对象上
+
+9. Vue中的事件处理
+    对于元素，使用v-on:命令绑定事件，例：
+        <button v-on:click="回调函数名"></button>
+
+    v-on:命令也可以简写成@，例：
+        <button @click="回调函数名"></button>
+
+    回调函数定义在methods属性中
+        new Vue({
+            ...
+
+            methods: {
+                fn1() { ... },
+                fn2() { ... },
+                ...
+            }
+        });
+
+    在绑定事件时也可以传入参数，例：
+        <button @click="fn('jane', 18, $event)"></button>
+
+        在这里传入了三个参数，最后一个$event是一个关键字占位符，表示事件对象，这样的话回调函数定义时要设置相应的形参
+        fn(name, age, $event) {
+            ...
+        }
+
+    一个小技巧：在指定回调函数时，如果要执行的操作很简单，可以不用指定回调函数，直接将操作写在引号内
+        <button @click="i++"></button>
+
+    事件修饰符
+        用法，例：
+            <a href="http://baidu.com" @click.prevent="fn($event)">阻止默认行为</a>
+
+        (1). prevent 阻止事件默认行为
+        (2). stop 阻止事件冒泡
+        (3). once 事件只触发一次
+        (4). capture 使用事件的捕获模式
+        (5). self 只有event.target是当前操作的元素时才会触发事件
+        (6). passive 事件的默认行为立即执行，无需等待事件回调执行完毕
+
+        修饰符可以链式调用，表示同时处理多个修饰符
+
+    键盘事件：
+        常用的键盘事件有keyup, keydown, keypress
+
+        键盘事件的别名，用法：
+            <input type="text" @keydown.enter="fn($event)"> 表示按下回车触发事件
+
+            常用的别名有以下几种：
+                回车 enter
+                删除和退格 delete
+                退出 esc
+                空格 space
+                换行 tab 这个有默认行为，按下时将焦点切到别的元素上，所以要配合keydown使用
+                上下左右 up down left right
+
+        也可以不使用别名，直接使用原始的键值绑定事件，例：
+            <input type="text" @keydown.Enter="fn($event)"> 直接使用了enter键的键值，其它按键也可以这样使用
+
+        几个特殊的按键（系统修饰键）：ctrl, alt, shift, meta(也可以叫win键)
+            配合keydown使用：正常触发事件
+            配合keyup使用：按下该键时，再按下其他键，然后释放其他键，事件才会被触发
+
+            这几个特殊的按键配合keyup时也可配合其他键连着写，表示按下修饰键的同时，再按下其他键触发事件，例：
+                @keyup.ctrl.y="fn($event)" 表示按下ctrl + y时触发事件
+
+        可以自定义按键别名：使用Vue.config.keyCodes属性
+            Vue.config.keyCodes.别名 = 键码;
+
+10. 计算属性
+    10.1 什么是计算属性：
+        通过已有的属性，计算出来的一个全新的属性，这个属性就叫计算属性
+
+    10.2 计算属性在一个computed配置项中存放，计算属性的值是一个对象，里面定义了get和set方法，用来拦截对该属性的读写
+        new Vue({
+            ...
+
+            computed: {
+                propKey: {
+                    get() {
+                        ...
+                        return ...
+                    },
+
+                    set() {
+                        ...
+                    },
+                },
+
+                ...
+            }
+        });
+
+    10.3 计算属性的原理：
+        在Vue创建vue实例时，会调用computed中定义的计算属性的get方法，将返回值作为该属性的值，并将该属性定义在vue实例上
+        然后在内存中创建一个该属性的缓存，以后再想读取该数据，直接从缓存中拿数据。
+
+        如果该计算属性依赖的属性发生了变化，就会重新调用该计算属性的get方法，然后更新缓存中的值
+
+        计算属性也可以定义set方法，当要修改计算属性的值时，就会调用set方法，注意，要在set方法中修改计算属性所依赖的属性值
+        计算属性的值才会真正发生变化
+
+    10.4 计算属性的简写：
+        如果确定计算属性只能被读，不能被修改，可以使用简写形式，即不把计算属性定义成一个对象，直接定义成一个函数，这个函数就起了get
+        函数的作用。
+
+        computed: {
+            propKey() {
+                ...
+                return ...
+            }
+        }
+
+        注意：计算属性简写看起来像一个函数，但它是起了get函数的作用，所以实际用的时候不能加()
+
+11. 监视属性：
+    监视属性被定义在watch配置项中
+        const vm = new Vue({
+            ...
+
+            watch: {
+                propKey: {
+                    handler(newValue, oldValue) {
+                        ...
+                    },
+                },
+            },
+        });
+
+        handler()函数是propKey属性被修改之后的要进行的操作，可以接受两个参数，newValue，oldValue，顾名思义，是改变
+        后的新值和改变前的旧值
+
+    添加监视属性还有一种方式：
+        vm.$watch('propKey', {
+            handler(newValue, oldValue) {
+                ...
+            },
+        });
+
+    监视属性必须存在才能正常监视
+
+    深度监视：
+        在配置项中设置一个deep属性，将其置为true即可开启深度监视，即如果数据是一个对象，可以监视到这个对象的多级结构的
+        所有属性
+
+        例：
+            data: {
+                propKey: {
+                    first: 1,
+                    second: 2,
+                },
+            },
+
+            watch: {
+                propKey: {
+                    deep: true,
+
+                    handler() {
+                        ...
+                    }
+                }
+            }
+
+    监视属性的简写形式：
+        如果不需要其他配置，只要配置handler函数，那么可以将监视属性写成简写形式
+
+        watch: {
+            ...
+
+            propKey(newValue, oldValue) { // 这个函数就相当于handler函数
+                ...
+            },
+
+            ...
+        }
+
+        采用$watch形式的简写形式为：
+            vm.$watch('propKey', function (newValue, oldValue) {
+                ...
+            });
+
+12. class与style绑定：
+    12.1 理解：
+        在应用界面中，某个（些）元素的样式是动态变化的
+        class/style绑定就是用来实现这个效果的
+
+    12.2 class：
+        12.2.1 字符串写法：直接使用v-bind绑定需要动态变化的class，然后通过vue实例去修改它，class里面写的是样式的类名字符串
+            <div class="one静态" :class='two'></div>
+
+            data: {
+                two: 'two动态',
+            }
+
+            这种写法标签属性中可以同时出现两个class属性的定义，只不过动态变化的那个要用v-bind绑定，vue会自动合成一个
+            class属性
+
+            这种写法适用于类名不确定，需要动态指定的情况
+
+        12.2.2 数组写法：直接使用v-bind命令绑定需要动态变化的class，然后通过vue实例去修改它，class里面写的是样式的类名数组的
+        字符串
+            <div class="one静态" :class="classArray"></div>
+
+            data: {
+                classArray: ['class1', 'class2', ...],
+            }
+
+            这种写法适用于类名不确定，个数也不确定，但是数组中的类名确定要用的情况
+
+        12.2.3 对象写法：直接使用v-bind命令绑定需要动态变化的class，然后通过vue实例去修改它，class里面写的是样式的类名对象的
+        字符串
+            <div class="one静态" :class="classObj"></div>
+
+            data: {
+                classObj: {
+                    class1: true,
+                    class2: false,
+                },
+            }
+
+            true表示添加这个class类名，false表示不添加这个类名
+
+            这种写法适用于类名确定，数量也确定，但是对象中的类名不确定用不用的情况
+
+    12.3 style：
+        12.3.1 对象写法：直接使用v-bind命令绑定style属性，然后通过vue实例去修改它，style里面写的是样式对象的字符串
+            <div :style="styleObj"></div>
+
+            data: {
+                styleObj: {
+                    fontSize: '18px', // 注意采用驼峰命名
+                    color: 'red',
+                },
+            }
+
+        12.3.2 数组写法：直接使用v-bind命令绑定style属性，然后通过vue实例去修改它，style里面写的是样式对象数组的字符串
+            <div :style="styleArray"></div>
+
+            data: {
+                styleArray: [
+                    {
+                        fontSize: '40px',
+                    },
+
+                    {
+                        color: 'red',
+                    }
+                ],
+            }
+
+13. 条件渲染：
+    13.1 条件渲染的指令：
+        13.1.1 v-if与v-else
+        13.1.2 v-show
+
+    13.2 v-show指令接收一个boolean值，来决定是否将元素隐藏
+        <div v-show="isShow"></div>
+        data: {
+            isShow: false,
+        }
+
+        v-show可以接收一个表达式，只要这个表达式可以转换为boolean值即可
+            <div v-show="a === b"></div>
+            <div v-show="false"></div>
+
+        v-show将元素隐藏的原理是将元素style.display属性置为none
+
+    13.3 v-if指令和v-show指令用法是一样的，不过原理不同
+        v-if指令隐藏的原理的原理是直接将元素从dom结构中删除
+
+    13.4 当元素的条件渲染频率很高时，尽量使用v-show，因为这样可以不用频繁的在dom结构中添加和删除元素
+
+    13.5 v-if和v-else-if可以结合使用，作用和普通的if-else-if是一样的，即如果if成立，else-if便不再判断
+        注意：如果v-if v-if-else v-else之间配合使用时，必须连在一起，不允许打断
+
+    13.6 <template></template>标签
+        这个标签只能配合v-if使用，用来将一组元素包裹起来，统一决定这组元素是否显示
+
+        <template v-if="false">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </template>
+
+        这个标签在浏览器渲染元素时会将其脱掉，不加入dom结构中
+
+14. 列表渲染：
+    14.1 可以使用v-for指令来展示列表数据：
+        <ul>
+            <li v-for="(item, index) in items" :key="index">
+                {{index}}--{{item}}
+            </li>
+        </ul>
+
+        data: {
+            items: [ item1, item2, ... ],
+        }
+
+        items: 表示v-for要遍历的数据集合，可以是数组，对象，字符串，也可以是指定的数值
+        item: 表示items中的数据项：
+            数组 --- 数组中存放的值
+            对象 --- 对象属性的属性值
+            字符串 --- 每个字符
+            数值 --- 具体的数字
+        index: 表示items中数据项对应的键值：
+            数组 --- 索引值
+            对象 --- 对象属性的属性名
+            字符串 --- 每个字符对应的索引值
+            数值 --- 具体数字对应的索引值
+        key: 每个数据项的唯一标识（只要保证每个数据项唯一即可，可以设置数据项对应的index，也可以设置数据项自身的唯一id），必须设置，之后要用于diff算法比对
+
+        v-for指令加在哪个标签身上，表示将这个标签重复渲染，渲染的次数根据items中的数据项的数量决定
+        使用遍历得到的数据项（即item）时要用插值语法
+
+    14.2 v-for指令不仅可以使用for...in循环遍历，也可以使用for...of循环遍历
+        遍历数组：
+            <ul>
+                <li v-for="(item, index) of [ ... ]" :key="index">
+                    {{index}}-{{item}}
+                </li>
+            </ul>
+
+        遍历对象：
+            <ul>
+                <li v-for="(item, index) of { ... }" :key="index">
+                    {{index}}-{{item}}
+                </li>
+            </ul>
+
+        遍历字符串：
+            <ul>
+                <li v-for="(item, index) of 'hello world'" :key="index">
+                    {{index}}-{{item}}
+                </li>
+            </ul>
+
+        遍历数字：
+            <ul>
+                <li v-for="(item, index) of 5" :key="index">
+                    {{index}}-{{item}}
+                </li>
+            </ul>
+
+    14.3 key的作用与原理
+        key值是Vue内部在使用的一个元素属性，在真实dom的元素属性中是不会出现的，key的作用就是Vue用来进行diff算法比对的。
+
+        比对的原理：
+            Vue会根据items中的数据在内存中生成以一个虚拟dom，然后将虚拟dom转换成真实dom，一旦items中的数据发生变化，Vue
+            就会根据新的数据生成新的虚拟dom，和之前的虚拟dom进行diff算法比对。比对时要把key值相同的两个新旧虚拟dom节点及
+            其子节点比对，如果完全相同，则直接使用之前的真实dom节点，如果有不同的子节点，则使用新的虚拟dom生成新的不同子节点的
+            真实dom，将原来的不同的子节点替换掉。如果没有找到key值相同的虚拟dom，则直接渲染新的真实dom
+
+        使用遍历时的索引值，即index作为key的坏处：
+            (1). 如果新的items中的数据顺序和原来的不同，会产生效率问题，出现没有必要的新的真实dom生成
+            (2). 如果新的items中的数据顺序和原来的不同，同时dom中还有输入类的节点，那么会产生数据错乱的问题
+
+            当新的items中的数据顺序和原来相同时，就不会产生问题。
+
+        综合来说，尽量使用数据项自身的唯一标识，例如id，身份证号，学号，等等来作为key值
+
+    14.4 当没有为v-for的元素添加key值时，vue会默认将索引值添加为key值
+
+15. Vue监测数据的原理
+    Vue会使用data中的数据在Vue实例身上生成一个_data属性，这个属性对data中的数据进行了加工，即为data中的每一个键值对生成一套
+    get()和set()方法，然后将这个_data属性再赋值给data，使得data和_data相等，之后在vue实例身上再给_data中的每个属性进行
+    数据代理，这样可以直接通过vue实例访问_data中的数据
+
+    如果data中的数据包含对象，那么就要递归的给每个对象中的键值对设置set和get方法，以便深度监视
+
+    设置了get和set方法之后，一旦修改了data中包含的对象中的属性时，就会调用其对应的set方法，在这个set方法里，会对模板进行重新解析
+    生成虚拟dom，diff算法比对，生成真实dom等操作（观察者模式）
+
+    一个关键的点：如果data中包含了数组，那么在生成_data属性时，不会给数组中的元素设置get和set方法（但是数组对象本身是有get和set方法的）
+    ，但是会包装数组的修改方法，一旦调用这些方法对数组进行更改，就会先调用数组原型上对应的方法对原数组修改之后，再进行模板重新解析，生成
+    虚拟dom等等操作，这些方法包括：
+        push(), pop(), shift(), unfshift(), sort(), reverse()
+    也就是说Vue不支持使用索引直接对data或者_data中的数组元素进行操作，支持使用包装后的这些方法对数组进行操作
+
+16. 动态的给data里的数据添加属性，有两个api
+    (1). Vue.set(target, propKey, value)
+        这个是Vue上的静态方法，在初始定义好data之后，如果以后还想再往data中已有的对象添加属性可以使用这个方法
+        接收三个参数：
+            target: 要添加属性的对象
+            propKey: 要添加的属性名称，用字符串形式
+            value: 要添加的属性值
+
+    (2). vm.$set(targetk, propKey, value)
+        与Vue.set()作用完全一样，不同的是这个是Vue实例身上的方法，使用时要通过vue实例调用
+
+    局限性：不能向Vue实例上直接添加数据，或者直接向Vue实例的根数据对象（即data）上直接添加数据也是不允许的，
+    只能向data里面的已有的对象上追加属性
+        data: {
+            obj: {
+                ...
+            }
+        }
+
+        即向data添加数据是不可以的，向this.obj上添加数据是可以的
+
+17. 收集表单数据：
+    若收集的是<input type="text">等可以手动输入value值的表单，则收集的是value值，且是用户手动输入的
+
+    若收集的是<input type="radio">，用户不能手动输入value值，则需要手动给表单配置value值，然后才可以使用v-model收集
+
+    若收集的是<input type="checkbox">，如果没有手动添加value值，那么使用v-model收集的是用户是否勾选了这个复选框，即一个
+    boolean值，如果手动添加了value值，那么收集的是添加的value值。如果要收集一组复选框的数据，那么要将这组复选框在data中
+    对应的数据项设置为数组
+
+    v-model的三个修饰符：
+        (1). lazy：等表单失去焦点时再收集
+        (2). number：将表单输入的文本转换为有效的数字再收集
+        (3). trim：将表单输入的文本前后空格去掉再收集
+
+18. Vue中的其它内置指令：
+    v-text：向其所在的标签内渲染文本内容，相当于innerText，不会解析标签，而且会替换掉标签中原有的所有内容
+
+    v-html：用法和v-text一样，但是可以解析html标签
+        十分注意，v-html标签具有严重的安全性问题，会造成xss攻击，偷取用户cookie，特别是在用户输入内容的标签中不要使用v-html
+        解析，永远不要相信用户的输入
+
+    v-cloak：本质是一个没有值的特殊属性，在Vue实例创建完毕并接管容器后，会将其删掉，配合css属性选择器可以解决网速过慢时不会出现
+        未解析的模板直接显示在页面上的效果
+
+    v-once：是一个没有值的特殊属性，这个属性所在的元素在初次动态渲染之后，就被视为静态，以后数据改变时便不会再重新加载渲染
+
+    v-pre：是一个没有值的特殊属性，添加了该指令之后，Vue会跳过对该节点的解析，所以在一些没有指令语法和插值语法的节点上可以添加该属性，
+        这样可以加快vue解析模板的效率
+
+19. 自定义指令：
+    19.1 自定义指令在directives配置中实现，例：
+        <div v-directiveName="value"></div>
+
+        new Vue({
+            ...
+
+            directives: {
+                ...
+            },
+        });
+
+    19.2 配置时有两种写法，函数式和对象式
+        19.2.1 函数式：
+            directives: {
+                directiveName(element, binding) {
+                    ...
+                },
+            },
+
+            element: 与自定义指令绑定的真实dom对象
+            binding: 与绑定相关的信息，其中最重要的的也是最常用的是绑定时传入的value值，即binding.value
+
+            该方法的调用时机：
+                · 一开始模板与指令绑定时调用一次
+                · 当模板被重新解析时调用
+
+        19.2.2 对象式：更完整的写法
+            directives: {
+                directiveName: {
+                    bind(element, binding) {
+                        ...
+                    },
+
+                    inserted(element, binding) {
+                        ...
+                    },
+
+                    update(element, binding) {
+                        ...
+                    }
+                },
+            },
+
+            bind(): 一开始模板与指令绑定时调用该方法
+            inserted(): 当真实dom对象被放到页面上之后，调用该方法
+            update(): 当重新解析模板时调用该方法
+
+            一般来说bind()和updata()中的逻辑是相同的，所以可以简单写成函数式的写法，但是函数式的写法没有办法处理真实dom被放到
+            页面上之后再进行操作的能力
+
+    19.3 全局指令：
+        上面定义的指令只能在单个的vue实例所管理的容器中使用，如果想要其他vue实例管理的容器也能用该指令，可以将其提升到全局，方法是：
+            Vue.directive('directiveName', {
+                bind(element, binding) {
+                    ...
+                },
+
+                inserted(element, binding) {
+                    ...
+                },
+
+                update(element, binding) {
+                    ...
+                }
+            });
+
+            或者：
+
+            Vue.directive('directiveName', function (element, binding) {
+                ...
+            });
+
+    19.4 注意点：
+        · directives中的方法里的this都是指向window的，vue并没有对此作调整，因为这里需要自己操作dom
+
+        · 指令命名风格：
+            指令名使用时要加v-，定义时不加v-
+
+            如果指令有多个单词，那么中间要用-分隔，首字母全部小写，例：
+                <div v-directive-name="value"></div>
+
+            定义时也要使用字符串的形式，例：
+                directives: {
+                    'directive-name'(element, binding) {
+                        ...
+                    }
+                }
+
+20. 生命周期：
+    20.1 什么是Vue生命周期：
+        生命周期是vue在运行过程中的特定的时间点，调用特定的函数，生命周期又叫生命周期回调函数，生命周期函数，钩子函数等，
+        生命周期函数的名字不可更改，但函数体可以自己编写，证明周期中的this指向是vue实例对象
+
+    20.2 Vue生命周期图示：
+        https://v2.cn.vuejs.org/v2/guide/instance.html#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%9B%BE%E7%A4%BA
+
+    20.3 注意点：（重要的钩子）
+        在mounted()里面进行一些绑定自定义事件，开启定时器，订阅消息等操作
+
+        在beforeDestroy()里面改变数据时，vm不会再更新页面了，一般在此阶段进行关闭定时器，取消订阅消息，解绑自定义事件等收尾操作
+
+21. 组件化编程：
+    21.1 什么是组件？
+        实现应用中局部功能的代码的资源的集合
+
+    21.2 为什么要使用组件？
+        使用传统的方式编写页面时，css，html，js之间是分开的，三者之间互相引用会导致混乱的问题，也不好维护
+
+        使用组件编程，将实现局部功能的html，css，js和其他资源都集中在一起，形成一个组件，使用该组件，和实现其他功能的组件拼合在一起
+        ，实现完整的页面功能
+
+        组件中也可以嵌套其它组件
+
+    21.3 非单文件组件：
+        21.3.1 创建一个Vue组件，使用Vue.extend()方法创建
+            const componentName = Vue.extend({
+                ...
+            } /* 组件的配置对象 */);
+
+            配置对象里面写的东西和创建Vue实例时几乎是一样的，不过在创建组件时，不能指定el属性，data属性指定时要写成函数式
+
+        21.3.2 将组件注册到vm实例上：
+            new Vue({
+                ...
+
+                // 局部注册
+                components: {
+                    componentName,
+                    ...
+                }
+            });
+
+            // 全局注册
+            Vue.component('componentName', {
+                ...
+            }/* 组件配置对象 */);
+
+        21.3.3 使用组件标签：
+            <div id="#root">
+                <componentName></componentName>
+            </div>
+
+        21.3.4 创建组件时的一个精简写法：
+            不用写Vue.extend()，直接将配置对象传给componentName
+                const componentName = {
+                    ...
+                };
+
+            在底层还是会调用Vue.extend()方法
+
+        21.3.5 组件嵌套：
+            组件中也有components配置，也可以用来配置它自己的子组件
+
+            在实际开发中，在vm之下创建一个app子组件，这个组件用来管理其他所有的组件，vm只需管理这一个组件即可
+
+        21.3.6 VueComponent构造函数：
+            组件的本质是一个构造函数，即使用Vue.extend()方法返回的是一个构造函数，当vue解析模板时会调用这个构造函数，返回
+            一个vue组件的实例对象。这个构造函数的名字叫：VueComponent()
+
+            每次调用Vue.extend()方法，返回的都是一个全新的VueComponent()
+
+        21.3.7 vue组件中的除了自定义指令之外的方法的this指向的是组件实例对象
+
+        21.3.8 Vue实例与组件之间的内置关系
+            VueComponent.prototype.__proto__ = Vue.prototype
+
+            即通过修改原型链实现了类似继承的效果，使得组件实例对象，也可以通过原型链找到Vue的原型上的方法和属性
+
+    21.4 单文件组件：
+        部署流程：
+            · 创建.vue文件，在文件里面的template标签写html结构，script标签里面写js代码，style标签里面写css样式
+            写完之后将组件的配置对象暴露出去
+
+            · 创建App.vue文件，在这个文件里，将所有其他组件文件全部引入并布局好，然后将App.vue的配置对象暴露出去
+
+            · 创建main.js文件，将App.js文件引入（注意要先引入vue.js文件），创建vm实例，注册App组件
+
+22. vue脚手架：vue cli
+    22.1 说明：Vue脚手架是Vue官方提供的标准化开发工具（开发平台）
+        cli --> command line interface
+
+    22.2 脚手架安装步骤
+        (1). 将npm下载地址改成淘宝镜像：npm config set registry https://registry.npm.taobao.org
+        (2). 全局安装vue-cli：npm insatll -g @vue/cli
+        (3). 切换到要创建项目的目录，使用 vue create xxx 命令创建项目
+        (4). 之后进入项目使用npm run serve开启cli服务
+
+    22.3 j脚手架默认配置：
+        使用 vue inspect > fileName.js 可以将默认配置输出到一个js文件中，在此文件中可以查看配置，但是不能修改
+
+        如果想要修改默认配置，可以在vue.config.js这个文件中个性化配置，配置详情见vue2官网：https://cli.vuejs.org/zh/config/
+
+    22.4 特殊标签属性：
+        · ref: vue提出的用来给一个dom元素打上一个标识的属性，通过这个属性，就可以不用操作dom就能获得对应的dom元素
+        用法：设置了ref属性的元素，都会出现在组件实例对象的$refs属性里，并且名字就叫ref的属性值，例如：
+            <div ref="domName">add property: ref</div>
+
+            vc.$refs.domName === <div>add property: ref</div>
+
+        一个注意点：如果ref加在了子组件标签上，那么在$refs上收集的是加了ref的子组件标签所对应的组件的实例对象
+
+    22.5 props配置：
+        功能：让组件能够接收父组件传进来的数据
+
+        使用方式：
+            在父组件中，向子组件标签设置属性
+            在子组件中，使用props配置接收属性
+            例：
+                父组件：<SonComponent prop1="xxx" prop2="xxx" ...></SonComponent>
+
+                子组件中有三种接收方式：
+                    (1). 使用数组接收：这种接收方式简单，但是不能指定接收属性的类型
+                        props: ['prop1', 'prop2', ...],
+                    (2). 使用对象接受：可以指定接收属性的类型，如果传入的类型错误，会在控制台报错，但仍然会接收
+                        props: {
+                            prop1: String,
+                            prop2: Number,
+                            ...
+                        },
+                    (3). 最完整的接收方式：可以指定接收的类型和是否必要传入
+                        props: {
+                            prop1: {
+                                type: String, // 表示prop1的类型是String类型
+                                required: true, // 表示prop1一定要传入
+                            },
+
+                            prop2: {
+                                type: Number,
+                                default: 18, // 表示prop2可以不传，如果不传就使用该默认值
+                            },
+                        },
+                    一般使用第一种就可以了
+
+        注意点：
+            父组件传入的属性，最好不要修改，控制台会报错，但修改仍然会生效。如果一定要修改，可以使用计算属性，或者在data中重新定义
+            一个数据让它等于传入的属性
+
+    22.6 mixin混入：
+        如果多个组件中有很多代码相同，那么可以将其抽离到一个新的js文件中，然后使用混入配置将其引入到组件中
+
+        定义混入，例：
+            在一个新文件中：
+                export const mixin1 = {
+                    data: { ... },
+                    methods: { ... },
+                    ...
+                };
+
+                export const mixin2 = {
+                    data: { ... },
+                    methods: { ... },
+                    ...
+                };
+
+                ...
+
+        使用混入，例：
+            局部引入：
+                在原组件中：
+                    import { mixin1, mixin2,  ... } from '@mixin.js';
+
+                    mixins: [mixin1, mixin2, ...],
+
+            全局引入：
+                在main.js中：
+                    import { mixin1, mixin2, ... } from '@mixin.js';
+
+                    Vue.mixin(mixin1);
+                    Vue.mixin(mixin2);
+                    ...
+
+        注意点：如果混入时和原组件有数据名冲突，优先使用原组件中的数据，如果和原组件有函数名冲突，那么都会使用
+
+    22.7 Vue插件：本质上是一个对象，作用是用来扩展Vue的功能
+        定义插件：
+            在plugins.js文件中：
+                export default {
+                    install(Vue, a, b, ...) {
+                        ...
+                    }
+                }
+
+            默认导出一个对象，在这个对象中必须实现install()方法，在使用插件时Vue会默认调用这个方法
+            install()方法的第一个参数是Vue实例对象的构造函数，通过这个参数，可以调用Vue构造函数上的静态方法，从而添加
+            自定义的一些全局配置，也可以通过构造函数给原型对象上添加一些属性和方法，从而扩展Vue的功能，之后的参数时调用时
+            可以动态传入的
+
+        使用插件：
+            在main.js文件中：
+                import pulgins from '@pulgins.js';
+
+                Vue.use(pulgins, a, b, ...); // 通过这个方法使用插件
+
+    22.8 组件样式标签的scoped属性：
+        作用：给样式添加上作用域，使样式只能在本组件生效，防止样式名冲突。
+        写法：<style scoped></style>
+
+    22.9 组件样式标签的lang属性：
+        作用：指定样式的语言类型，不设置的话默认是css，注意如果设置了less，那么要安装上less的解析器，安装方法：npm i less-loader
+        写法：<style lang="less"></style>
+
+23. 组件化编码流程：
+    (1). 实现静态组件：抽取组件，使用组件实现静态页面效果
+    (2). 展示动态数据：
+        数据的类型是什么，名称是什么
+        数据保存在那个组件
+    (1). 交互 -- 绑定事件监听开始
+
+24. 父组件向子组件传数据：使用props配置
+    子组件向父组件传数据，在父组件中定义一个接收方法，将这个方法传给子组件，子组件拿到方法之后调用就可以将数据传给父组件（该方法中的this指向父组件实例）
+
+    一个注意点：数据在哪里，操作数据的方法就在哪里
+
+25. 浏览器本地存储：webStorage
+    25.1 widow.localStorage：
+        有四个api：
+            localStorage.setItem(key, value)  // 向浏览器本地存储中添加一个键值对，键值对的数据类型都是字符串，如果要存储对象，可以使用JSON.stringify
+            localStorage.getItem(key) // 从浏览器本地存储中获取对应键的值，如果没有，则返回null
+            localStorage.removeItem(key) // 从浏览器本地存储中移除一个键值对
+            localStorage.clear() // 清楚所有本地存储
+
+    25.2 window.sessionStorage:
+        api和localStorage一样，作用也完全一样
+
+    25.3 这两个浏览器本地存储可以让用户将一些数据（例如网站浏览历史记录）存储在浏览器本地，在 控制台-->应用程序 中可以查看，不同的网站有不同的浏览器本地存储
+    用户可以通过清除浏览器的缓存，数据等设置将本地存储清除。一般存储大小5M左右，不同浏览器可能不同
+
+    25.4 不同点：
+        localStorage浏览器窗口关闭之后仍然存在
+        sessionStorage浏览器窗口关闭之后会消失
+
+26. 组件自定义事件：
+    组件自定义事件是加在组件实例对象上的事件：
+        绑定的写法有两种：
+            (1). <componentName @defineEventName="callbackName"></componentName>
+
+                defineEventName: 表示自定义事件的名字
+                callbackName: 表示事件触发时的回调函数名
+
+            (2). 使用ref，在mounted钩子里绑定 
+                <componentName ref="componentName"></componentName>
+
+                mounted() {
+                    this.$refs.componentName.$on('defineEventName', 'callbackName');
+
+                    // 下面这种绑定方式表示该自定义事件只触发一次，相当于.once事件修饰符
+                    // this.$refs.componentName.$once('defineEventName', 'callbackName');
+                }
+        
+        触发事件：在绑定自定义事件的组件实例对象的标签对应的组件里面触发，写法为
+            this.$emit('defineEventName', [params, ...]);
+
+            this：表示绑定事件的那个组件实例对象
+            [params, ...]：表示可选的可以传任意多个参数
+
+    callbackName回调函数在接收参数时，一般形参成rest参数（即 (...args) ）
+
+    解绑自定义事件：
+        (1). 解绑一个：
+            this.$off('defineEventName');
+
+            this: 表示绑定事件的组件实例对象
+        (2). 解绑多个：
+            this.$off(['defineEventName1', 'defineEventName2', ...]);
+        (1). 解绑全部：
+            this.$off();
+
+    注意点：
+        当组件实例对象被销毁时，自定义事件将会失效
+
+        如果将回调函数直接定义在绑定事件时，里面的this指向的时触发事件的那个组件实例对象：
+            mounted() {
+                this.$refs.componentName.$on('defineEventName', function (...args) {
+                    ...(this指向触发事件的组件实例对象)
+                });
+            }
+
+            如果写成箭头函数，this就会和mounted指向一致，但是推荐将回调函数单独定义在methods中
+
+        组件标签也可以指定原生事件，不过要加.native修饰符
+            <componentName @click.native></componentName>（vue3中可以正常写@click，不用.native）
+        
+        自定义事件适合子组件向父组件传递数据，兄弟组件无法传递数据
+
+27. 全局事件总线：golbaleventbus
+    是一种组件间通信的方式，适用于任意组件之间，原理是定义一个不属于任何一个组件，但又能被任何一个组件访问到的一个特殊的组件
+    在这个组件上绑定自定义事件，在这个组件上触发自定义事件，通过自定义事件的回调函数的参数来传递数据
+
+    这个特殊的组件的最佳选择是vm，可以将vm定义在Vue.prototype上，这样就可以被所有组件访问到
+        new Vue({
+            render: h => h(App),
+
+            beforeCreate() {
+                Vue.prototype.$bus = this; // 这样就可以将vm放在Vue原型对象上，被所有组件访问到
+            },
+        }).$mount('#app');
+
+    特别注意的一点：组件间定义的自定义事件名不能重复，组件使用结束之后应该将先前定义的自定义事件解绑（在mounted中绑定，在beforeDestroy中解绑）
+
+    适合使用全局事件总线的方式传递数据的场合：
+        跨级组件传送，子组件向父组件的父组件传递
+        兄弟组件传送
+
+28. 消息订阅与发送：
+    工作原理：
+        一个组件订阅消息：声明一个消息名，指定一个回调函数
+        一个组件发布消息：发布对应的消息名，以参数的形式传递数据
+
+    使用第三方库：pubsub-js（publish subscribe），安装指令 npm i pubsub-js
+
+    写法：
+        订阅消息：
+            import pubsub from 'pubsub-js';
+
+            methods: {
+                callbackName(msgName, value) {
+                    ...
+                }
+            }
+
+            mounted() {
+                this.pubsubId = pubsub.subscribe('msgName', this.callbackName);
+            }
+
+            msgName: 消息名
+            value: 消息发布者传递过来的数据
+
+        发布消息：
+            import pubsub from 'pubsub-js';
+
+            // 在合适的时机
+                ...
+                pubsub.publish('msgName', value);
+                ...
+
+            msgName: 消息名
+            value: 要发布的数据
+
+        取消订阅消息：
+            beforeDestory() {
+                pubsub.unsubscribe(this.pubsubId);
+            }
+
+    注意点：
+        如果在订阅消息时指定回调函数，那么回调函数中的this会指向undefined
+            this.pubsubId = pubsub.subscribe('msgName', function (msgName, value) {
+                ... (this指向undefiend)
+            });
+
+        如果写成箭头函数，那么this的指向和外层的指向一致
+
+29. 一个api：vm和vc上的一个方法，$nextTick(() => { ... })
+    在这个方法指定的回调中的操作会等到下一轮dom更新后执行，即回调中的操作是针对更新之后的新dom
+    该方法和生命周期钩子updated很像
+
+30. Vue中的动画和过渡：
+    30.1 在Vue中指定动画可以使用<transition></transition>标签，写法如下
+        <template>
+            <transition name="animationClassName">
+                <div></div>
+                ...
+            </transition>
+        </template>
+
+        <style>
+            .animationClassName-enter-active {
+                animation: animationName 2s ...;
+            }
+
+            .animationClassName-leave-active {
+                animation: animationName 2s ...;
+            }
+
+            @keyframes animationName {
+                ...
+            }
+        </style>
+
+        将要使用动画的标签用一个transition标签包裹起来，给transition标签指定一个名字，用来和css中的使用动画类选择器名匹配
+        在style标签中定义动画关键帧，将使用动画的属性定义在两个特殊的类选择其中，这两个特殊的类选择器名有固定格式
+            animationClassName-enter-active
+                表示animationClassName名字的transition标签里的所有标签在进入或者显示时应用该动画
+
+            animationClassName-leave-active
+                表示animationClassName名字的transition标签里的所有标签在退出或者消失时应用该动画
+
+        transition标签有一个属性appear，可以指定页面加载完毕后就显示一次animationClassName所对应的进入动画，写法如下
+            <transition name="animationClassName" :appear="true"> ... </transition>
+            或者
+            <transition name="animationClassName" appear> ... </transition>
+    
+    30.2 过渡效果：例：
+        <transition name="_name">
+            <div class="demo"></div>
+        </transition>
+
+        <style>
+            .demo {
+                transition: all 2s ... ;
+            }
+
+            ._name-enter {
+                // 表示过渡组件进入的起始样式
+                ...
+            }
+
+            ._name-enter-to {
+                // 表示过渡组件进入的终止样式
+                ...
+            }
+
+            ._name-leave {
+                // 表示过渡组件离开的起始样式
+                ...
+            }
+
+            ._name-leave-to {
+                // 表示过渡组件离开的终止样式
+                ...
+            }
+        </style>
+        
+        如果想要给多个组件都设置相同的过度或者动画样式，那么要使用transition-group组件标签，并且给其中的组件都要设置key属性，作用和v-for的key相同
+            <transition-group>
+                <div key="1"></div>
+                <div key="2"></div>
+                ...
+            </transition-group>
+
+    30.3 集成第三方动画库：Animate.css
+        指令：npm install animate.css
+
+        使用方式：
+            (1). 导入：import 'animate.css';
+            (2). 使用：例：
+                <transition
+                    appear // 第一次加载时使用一次进入动画
+                    name="animate__anmited animate__bounce" // 注意中间是两条下划线
+                    enter-active-class="xxx" // 指定进入时的动画，类名在animate.css官网上找喜欢的动画名复制即可
+                    leave-active-class="xxx" // 指定消失时的动画
+                >
+                    <div></div>
+                </transition>
+
+    30.4 总结：
+        准备好样式：
+            v-enter: 进入的起点
+            v-enter-active: 进入过程中
+            v-enter-to: 进入的终点
+
+            v-leave: 离开的起点
+            v-leave-active: 离开过程中
+            v-leave-to: 离开的终点
+
+        使用transition标签包裹要过度的元素，并配置name属性
+        当有多个元素要过渡时，要使用transition-group标签，并给每个元素配置key属性
+
+31. 配置代理服务器解决跨域问题
+    当客户端通过浏览器向服务器发送请求时，如果客户端所处的协议ip端口与服务器有一个不同，那么就会存在跨域问题
+
+    跨域问题的原因：浏览器向服务器发送了请求，服务器也接受了请求，向浏览器也发送了响应，浏览器也接受到了响应，但是因为跨域浏览器不会把响应数据给用户
+    
+    解决跨域问题的方式有三种：
+        (1). 让服务器在返回响应时在响应头中添加一些允许跨域的配置
+        (2). 使用jsonp，但是局限性太大，一般不用
+        (3). 配置代理服务器
+
+    通过配置代理服务器解决跨域问题的原理：
+        代理服务器与客户端的协议ip端口均一致，不存在跨域问题，客户端先向代理服务器发送请求，代理服务器再将请求转发给原本的服务器，原本的服务器先将响应
+        发送给代理服务器，代理服务器再将相应发送给客户端
+
+        因为服务器与服务器之间发送请求和响应时没有同源策略限制，所以代理服务器和原本的服务器之间可以互相通信
+
+    配置代理服务器的方法：
+        (1). 使用nginx
+        (2). 使用vue-cli
+
+    如何通过vue-cli配置代理服务器：参考https://cli.vuejs.org/zh/config/#devserver-proxy
+        在vue.config.js中配置
+            devServe: {
+                proxy: url, // 这行表示代理服务器要代理的原本的服务器的地址，例如：'http://localhost:3000'
+            },
+    
+        代理服务器中如果有请求的资源，那么就不会将请求转发给原本的服务器
+
+    更加灵活的配置代理：
+        devServe {
+            proxy: {
+                '/api': { // 请求的前缀
+                    target: <url>, // 转发的url
+                    ws: true, // 表示支持websocket，不写默认为true
+                    changeOrigin: true, // 表示将请求头中的host信息配置成和原本的服务器一致
+                }
+
+                '/api1': {
+                    target: <url>,
+                    pathRewrite: {
+                        '^/api1': '',
+                    }
+                }
+            }
+        }
+
+        api1中的pathRewrtie表示匹配正则表达式：将/api1替换为空串，之所以将/api1设为为前缀，还要在转发时将其替换为空串，是为了避免原本的前缀和本地已有的资源
+        冲突，导致代理直接访问的是本地的资源而不将请求转发，例：
+            '/sendThis/students/': {
+                target: 'http://localhost:3000',
+                pathRewrite: { '^/sendThis': '',  }
+            }
+
+            如果本地就有students的静态资源，那么直接写'/students'的话代理会将本地的students资源交给客户端而不会将请求转发
+
+32. github请求用户数据案例
+    32.1 请求地址：https://api.github.com/search/users?q=xxx
+
+33. vue中的插槽slot：
+    插槽是一个标签
+
+    33.1 默认插槽：<slot></slot>，例：
+        fatherComponent:
+            <template>
+                <SonComponent>
+                    <div>...</div>
+                </SonComponent>
+            </template>
+
+        SonComponent:
+            <template>
+                ...
+                <slot>default slot</slot>
+                ...
+            </template>
+
+        在父组件中将子组件标签写成完整形式，然后在子组件的标签体中可以写其他标签，这些其他标签会在父组件中完成解析，然后会将他们放在
+        子组件中的<slot></slot>标签位置，这个<slot></slot>标签体中也可以写一些内容，当没有在父组件中写其他标签时，这些默认内容会展示
+
+    33.2 具名插槽：<slot name="slotName"></slot>，例：
+        fatherComponent:
+            <template>
+                <SonComponent>
+                    <div slot="slotName">...</div>
+                </SonComponent>
+            </template>
+
+        SonComponent:
+            <template>
+                ...
+                <slot name="slotName">havename slot</slot>
+                ...
+            </template>
+
+        具名插槽在默认插槽的基础上添加了名字，可以将父组件的子组件标签中的其他标签放入指定的插槽中，如果没有指定标签的slot属性，那么
+        将不会放入任何插槽中，如果多个其他标签设置了相同的slot属性，那么会追加到相同的插槽中
+
+    33.3 作用域插槽：
+        使用场景：数据在子组件中不能交给父组件，在父组件中没有办法直接得到数据，但是在插槽中又要使用子组件的数据，这个时候可以使用作用域插槽
+        写法：
+            fatherComponent: 
+                <template>
+                    <SonComponent>
+                        <template slot="slotName" scope="dataName">
+                            ...
+                            <div>...</div>
+                            ...
+                        </template>
+                    </SonComponent>
+                </template>
+
+            SonComponent:
+                <template>
+                    <slot name="slotName" :data1="data1" :data2="data2" ... ></slot>
+                </template>
+
+            在父组件中必须要使用template标签将要放到插槽中的标签包裹起来，然后使用scope属性获得数据，在子组件的插槽中使用自定义属性的方式传递数据
+            父组件接收到的数据，即dataName是一个对象，{ data1: data1, data2: data2, ... }，这里可以直接使用解构赋值的方式拿到数据，即scope="{data1, data2, ...}"
+
+            如果使用template标签包裹要放到插槽中的标签，那么指定插槽名时可以使用新写法 v-slot:slotName
+    
+34 vuex技术：
+    34.1 vuex是什么：
+        专门在vue中实现集中式状态（数据）管理的vue插件，对vue应用中的多个组件共享的状态（数据）进行集中式的管理（读/写），也是一种组件间通信的方式，且适用于任意组件
+
+        github地址：https://github.com/vuejs/vuex
+
+    34.2 什么时候使用vuex
+        多个组件依赖于同一个状态：读
+        多个组件的行为需要变更同一个状态：写
+    
+    34.3 Vuex工作原理：
+                      
+                           Backend api
+                              |
+                      +-------|-----------------------------+
+            Dispatch  |       |           Commit            |<-------Store
+    +---------------------->Actions------->----------+      |
+    |                 |                              |      |
+    |                 |                              |      |
+    |                 |                              |      |
+vue component         |                         Mutations<------->Devtools(vuex官方提供的开发者工具)
+    |                 |                              |      |
+    |                 |                              |      |
+    |       Render    |               Mutate         |      |
+    +----------<-----------State<--------------------+      |
+                      |                                     |
+                      +-------------------------------------+
+
+        vue component，即vc通过调用dispatch方法，告知Actions要对数据进行的操作，在Actions中，如果有逻辑判断和向后端发送请求等需求，那么在Actions中
+        进行，然后Actions调用commit方法，将操作通知给Mutations，在Mutations中对State中的数据进行加工，加工完之后State会对vc重新进行渲染
+
+        这里的原理有点类似后端mvc模型：
+            Actions：类似后端的路由转发层（请求转发层）
+            Mutations：类似后端的控制层，真正操作数据库的一层
+            State：数据库层，真正的数据存放处
+
+            vc通过调用dispatch发送了一个修改或者读取数据的请求给Actions，Actions将请求判断，加工，然后转发给Mutations，Mutations真正操作底层State，
+            Actions和Mutations都是中间件
+            
+        最后这三个都统一归一个Store管理，这三个都是对象类型
+    34.4 搭建vuex的工作环境：
+        (1). 安装vuex，npm i vuex
+        (2). 引入并且使用插件
+        (3). 在vm上配置Store配置项，使所有的vc都可以使用Store，配置方法：
+            在src下创建一个store文件夹，在其之下创建一个index.js文件，在这个里面进行编写store的配置
+                index.js: 
+                    先创建三个对象：Actions, Mutations, State,
+                    然后再引入vuex，使用new Vuex.Store()创建一个store对象，并将其导出，构造函数中传入一个配置对象
+                        { Actions, Mutations, State, }
+            在main.js中引入./store/index.js，引入之后在vm配置项中配置
+                new Vue({
+                    ...
+                    store,
+                    ...
+                });
+            这里引入文件时可能会发生一些顺序错误，例如在没有Vue.use(vuex)之前使用了new Vuex.Store()，使用动态引入可以解决
+        
+    34.5 如何使用vuex修改数据
+        (1). 在vc中通过调用this.$store.dispatch('optionName', optionValue) api来告诉actions操作的类型和操作的值
+            optionName: 操作的类型或者要进行的操作名
+            optionValue: 操作需要的相关数据
+        
+        (2). 在actions中配置好操作名对应的操作函数，例：
+            actions = {
+                optionName(context, optionValue) {
+                    ....
+                    context.commit('optionName', optionValue);
+                },
+            }
+
+            context: actions中的optionName操作要用到的上下文信息，实际上是一个残缺版的$store对象，里面有commit方法，可以让actions将操作转发给mutations
+            optionValue: 操作需要的相关数据
+
+        (3). 在mutations中配置好操作名对应的操作函数，例：
+            mutations = {
+                optionName(state, optionValue) {
+                    // 真正操作state中的数据
+                },
+            }
+
+            state: 存放数据的state对象
+            optionValue: 该操作需要的相关数据
+        
+        这样就完成的对state中的数据修改
+
+    34.6 store的getters配置项：例：
+        const getters = {
+            dataName(state) {
+                ...
+            },
+        };
+
+        new Vuex.Store({
+            ...
+            getters,
+            ...
+        });
+
+        getters相当于一个计算属性，读取时可以以this.$store.getters.dataName的方式读取。
+        getters配置项不是必须的，当需要通过对state中的数据进行加工从而得到一个新数据时，可以使用这种方式
+
+    34.7 mapState和mapGetters
+        用途：可以简化state和getters中的数据的读取操作
+        原理：将state和getters中的数据映射为计算属性
+        写法：
+            import { mapState, mapGetters } from 'vuex';
+
+            computed: {
+                // 对象写法
+                ...mapState({
+                    computedName1: 'stateDataName1',
+                    computedName2: 'stateDataName2',
+                    computedName3: 'stateDataName3',
+                    ...
+                });
+                // 数组写法
+                ...mapState([ 'stateDataName1', 'stateDataName2', 'stateDataName3', ... ]);
+
+                ...
+            }
+
+            mapState是一个函数使用之前要先引入
+            对象写法：可以传递一个对象作为参数，其中的computedName是计算属性名，stateDateName是计算属性对应的state中的数据
+            名
+            数组写法：可以传递一个驻足作为参数，其中数组元素是字符串类型，即使计算属性名，也是state中对应的数据名，两者名字相
+            同
+
+            mapGetters用法与mapState一致
+        
+        相当于是vuex自己批量的生成了一些计算属性，不用我们自己手动编写，计算属性的定义是下面这样的：
+            computedName1: function() {
+                return this.$store.state.stateDataName1;
+            }
+            ...
+
+    34.8 mapMutations和mapActions
+        作用：简化commit方法和dispatch方法的调用
+        原理：自动生成调用commit和dispatch方法的方法
+        写法：和mapState, mapGetters的使用方法一致
+            import { mapMutations, mapActions } from 'vuex';
+            methods: {
+                // 对象写法
+                ...mapMutations({
+                    functionName1: 'optionName1',
+                    functionName2: 'optionName2',
+                    functionName3: 'optionName3',
+                    ...
+                });
+
+                // 数组写法
+                ...mapMutations(['optionName1', 'optionName2', 'optionName3', ... ]);
+
+                ...
+            }
+
+            数组写法表示要自动生成的方法名和要调用的mutations或者actions中的方法名是同名的
+            mapActions用法也一样
+
+        相当于vuex自动批量生成了调用commit和dispatch的方法，方法的定义形式是下面这样的：
+            functionName1: function (value) {
+                this.$store.commit('optionName1', value);
+            }
+            ...
+
+        稍微有点不同的地方在于，commit中的value不是我们手动传进去的，而是vuex自动根据functionName1方法的value参数传进去的
+        所以要注意的是，在使用functionName1的地方要手动传入value参数，例如如果functionName1是事件的回调函数，那么调用时应该传参：
+            <button @click="functionName1(value)"></button>
+            <button @click="optionName2(value)"></button>
+
+            methods: {
+                ...mapMutations({
+                    functionName1: 'optionName1',
+                }),
+                或者：
+                ...mapMutations(['optionName2']),
+            },
+
+    34.9 vuex的模块化写法：
+        在index.js中：
+            const model1 = {
+                namespaced: true,
+
+                actions: {
+                    ...
+                },
+
+                mutations: {
+                    ...
+                },
+
+                state: {
+                    ...
+                },
+
+                getters: {
+                    ...
+                }
+            }
+
+            const model2 = {
+                namespaced: true,
+
+                actions: {
+                    ...
+                },
+
+                mutations: {
+                    ...
+                },
+
+                state: {
+                    ...
+                },
+
+                getters: {
+                    ...
+                }
+            }
+            ...
+
+            export default vuex.Store({
+                modules: {
+                    model1,
+                    model2,
+                    ...
+                },
+            });
+
+        在组件中使用时：
+            直接使用:
+                this.$store.dispatch('model1/xxx', value) 
+                this.$store.commit('model1/xxx', value)
+
+                this.$store.state.model1.xxx
+                this.$store.getters['model1/xxx']
+
+            使用四个map方法时：
+                ...mapState('model1', [...]); // 数组写法
+                ...mapState('model1', {...}); // 对象写法
+
+                与之前不同的是，要在第一个参数指定一个要访问模块名，否则方法不会生效，其他三个方法同理
+                注意如果要使用map方法，必须将模块内的namespaced属性置为true，否则无法使用
+
+35. 路由：vue-router
+    35.1 概念：
+        一个路由就是一个key-value
+            key是路径
+            value是一个function或者component
+        多组路由要用一个路由器管理
+
+    35.2 用途：
+        vue的一个插件库，专门用于实现SPA(single page web application 单页面web应用)，即不通过跳转页面的
+        方式实现组件的切换，同时路径也会改变
+
+    35.3 使用：
+        (1). npm i vue-router
+        (2). 在main.js中引入并使用vue-router
+        (3). 在创建vm时就可以传入一个全新的配置，router
+            new Vue({
+                ...
+                router: routerObj,
+                ...
+            });
+
+            这个routerObj在另外一个文件(router/index.js)里配置
+
+    35.4 进行路由规则配置：
+        在src目录下创建一个router文件夹，在里面创建一个index.js文件，在这个文件中：
+            import VueRouter from 'vue-router';
+            import componentName1 from '../components/componentName1';
+            import componentName2 from '../components/componentName2';
+            ...
+
+            export default new VueRouter({
+                routes: [
+                    {
+                        path: '/xxx',
+                        component: componentName1,
+                    },
+
+                    {
+                        path: '/xxx',
+                        component: componentName2,
+                    },
+                    ...
+                ],
+            });
+        
+        在main.js中：
+            import router from './router';
+
+            new Vue({
+                ...
+                router,
+                ...
+            });
+    
+    35.5 使用路由修改路径并切换组件
+        在要修改路径的地方使用vue-router库提供的一个特殊标签<router-link></router-link>，这个标签最终会转换成a标签
+        写法：
+            <router-link to="/xxx"></router-link>
+
+            to属性表示要将路径后缀追加或修改为/xxx，然后会根据路由规则匹配相应的组件
+
+        在要展示组件的地方使用一个特殊标签<router-view></router-view>，路径被修改后，这个标签将被替换为相应的组件来展示
+
+    35.6 组件分类：
+        路由组件：由路由器管理是否渲染的组件叫路由组件
+        一般组件：程序员亲自管理渲染的组件叫一般组件
+
+        路由组件要放在一个新的文件夹里，src/pages/xxx.vue
+
+        路由组件在被切换走了之后是被销毁了，在被切换回来时是被重新挂载了
+
+        每个路由组件都新增了的$route和$router属性，$route属性是每个路由组件独有的，每个路由组件的$route属性都是不同的，而$router属性每个
+        路由都是相同的，实际上$router全局只有一份
+
+    35.7 嵌套路由（多级路由）
+        在index.js中：
+            export default new VueRouter({
+                // 一级路由
+                routes: [
+                    {
+                        path: '/xxx',
+                        component: componentName,
+
+                        // 二级路由
+                        children: [
+                            {
+                                path: 'xxx',
+                                component: componentName,
+
+                                ...
+                            },
+                            ...
+                        ],
+                    },
+                    ...
+                ],
+            });
+
+        子路由的path配置不要写斜杠 / ，路由插件已经自动补上了斜杠
+
+        在使用<router-link></router-link>标签时，to属性一定要写完整的路由路径，即父路由的路径也要写上
+
+    35.8 路由传参：
+        35.8.1 query参数：
+            (1). 字符串写法：
+                在使用路由link标签时直接将参数带在路径后边：
+                    <router-link :to="`/xxx/xxx?a=${valueA}&b=${valueB}`"></router-link>
+
+                在路由组件的$route属性中有一个query属性，里面存放的就是query参数
+                    在路由组件中：
+                        this.$route.query.a = valueA
+                        this.$route.query.b = valueB
+
+            (2). 对象写法：
+                <router-link :to="{
+                    path: '/xxx/xxx',
+                    query: {
+                        a: valueA,
+                        b: valueB,
+                        ...
+                    },
+                }">
+                    ...
+                </router-link>
+                
+                接收参数的方法与字符串写法相同
+        
+        35.8.2 params参数：
+            (1). 字符串写法：
+                <router-link :to="`/xxx/xxx/${valueA}/${valueB}`"></router-link>
+
+                这样写要在配置路由规则时指定占位符：
+                    {
+                        path: 'xxx/:a/:b',
+                        component: componentName,
+                    }
+                
+                在路由组件中有一个params参数，里面存放的是传过来的参数
+                    this.$route.params.a = valueA
+                    this.$route.parems.b = valueB
+
+            (2). 对象写法：
+                <router-link :to="{
+                    name: 'xxx',
+                    params: {
+                        a: valueA,
+                        b: valueB,
+                    }
+                }"></router-link>
+
+                这样写时不能使用path属性，只能使用name属性，也就是说在配置路由规则时要指定name配置
+
+                接收参数的方法与字符串写法一致
+
+    35.9 路由命名：
+        在路由配置对象中添加name属性即可：
+            {
+                name: 'xxx',
+                path: '/xxx',
+                component: componentName,
+            }
+        作用是可以简化路由跳转时路径的写法，当路径过长时，可以将to写成对象形式然后不用指定path，指定一个name属性，值为路由的名字
+            <router-link :to="{ name: 'xxx' }"></router-link>
+
+    35.10 路由组件的props配置
+        路由组件在接受参数时要使用this.$route.query/params.a这种方式，非常繁琐，可以在路由配置中配置一个props配置，这样可以在路由组件中使用props属性拿到
+        参数
+            在路由配置中：
+                (1). 对象写法：
+                    {
+                        name: 'xxx',
+                        path: '/xxx',
+                        component: componentName,
+                        props: {
+                            a: valueA,
+                            b: valueB,
+                            ...
+                        },
+                    }
+
+                    这样写数据不能动态变化，不常用
+                
+                (2). 布尔值写法
+                    {
+                        name: 'xxx',
+                        path: '/xxx',
+                        component: componentName,
+                        props: true,
+                    }
+
+                    将props属性值调为true，意味着其他组件将以params传递给路由组件的参数，可以使用props属性的方式接收，query参数不适用
+
+                (3). 函数式写法
+                    {
+                        name: 'xxx',
+                        path: '/xxx',
+                        component: componentName,
+                        props($route) {
+                            return {
+                                a: $route.params.a,
+                                b: $route.params.b,
+                            };
+                        },
+                    }
+
+                    props是一个回调函数，接受$route参数，返回值是一个对象，里面就是传递的参数键值对，可以使用解构赋值直接拿到query或者params
+                        props({ query }) {
+                            return {
+                                a: query.a,
+                                b: query.b,
+                            };
+                        },
+                        或者：
+                        props({ query: { a, b } }) {
+                            return {
+                                a,
+                                b,
+                            };
+                        },
+            
+            在路由组件中拿到参数：
+                export default {
+                    ...
+                    props: ['a', 'b'],
+                    ...
+                };
+
+    35.11 路由link标签的replace属性
+        <router-link replace to="/xxx"></router-link>
+        或者：
+        <router-link :repalce="true" to="/xxx"></router-link>
+
+        将路由的link标签的replace属性置为true，意味着点击该路由链接时将替换当前页面，不能后退（无痕浏览）

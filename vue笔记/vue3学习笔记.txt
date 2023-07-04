@@ -1,0 +1,10 @@
+## 创建vue3工程
+### 使用vue-cli创建时与vue2相同
+注意选择默认的vue3
+
+### 使用vite创建
+1. npm init vite-app <project-name>
+2. cd <project-name>
+3. npm init
+4. npm run dev
+
