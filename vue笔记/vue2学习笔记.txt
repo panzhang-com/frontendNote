@@ -693,7 +693,7 @@
         (3). 切换到要创建项目的目录，使用 vue create xxx 命令创建项目
         (4). 之后进入项目使用npm run serve开启cli服务
 
-    22.3 j脚手架默认配置：
+    22.3 脚手架默认配置：
         使用 vue inspect > fileName.js 可以将默认配置输出到一个js文件中，在此文件中可以查看配置，但是不能修改
 
         如果想要修改默认配置，可以在vue.config.js这个文件中个性化配置，配置详情见vue2官网：https://cli.vuejs.org/zh/config/
