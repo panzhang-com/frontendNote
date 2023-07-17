@@ -161,4 +161,30 @@ async function askQuestion() {
 }
 ```
 
+## 文件操作，从 json 文件中读取问题并解析
+
+1. 定义一个 json 文件保存问题
+
+```json
+// 在 questions.json 文件中
+[
+  {
+    "question": "Where do your name?",
+    "answer": "xian",
+    "id": 1
+  }
+]
+```
+
+2. 使用 `node:fs/promises` 模块读取文件
+
+```js
+async function askQuestion() {
+  // 读取并解析 questions.json 文件中保存的问题数据
+  const questionsData = JSON.parse((await fs.readFile('./questions.json')).toString())
+
+  // ...
+}
+```
+
 ## 
