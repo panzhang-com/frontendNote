@@ -765,4 +765,67 @@ $bus.emit('eventName', data)
 
 4. mitt 插件 npm 官网：https://www.npmjs.com/package/mitt
 
-## 
+## 17. 自定义组件的 v-model 实现父子组件数据同步
+
+- 原理：给自定义组件上使用 v-model 相当于给自定义组件添加了一个 props 属性，并且绑定了一个自定义事件，子组件通过触发这个自定义事件来修改父组件中对应于这个 props 的响应式数据，数据被修改，页面重新渲染，父子组件的页面都得到更新，实现数据同步
+- 下面是一个例子：
+
+```vue
+<!-- 在父组件中 -->
+<template>
+  <div>
+    <hr />
+    Child1: {{ dataInFather }}<br />
+    Child2: page id: {{ pageId }}, page size: {{ pageSize }}
+
+    <!--
+      给自定义组件使用 v-model：
+      1. 相当于给自定义组件先传递了一个props：:modelValue="data"
+      2. 再给自定义组件绑定了一个自定义事件：@update:modelValue="handler"， 这个 handler 不用自己写
+    -->
+    <child1 v-model="dataInFather" />
+    <!--
+      1. 相当于给自定义组件传递了两个 props：:pageId="pageId" :pageSize="pageSize"
+      2. 相当于给自定组件传递了两个自定义事件：@update:pageId="handler" @update:pageSize="handler"
+    -->
+    <child2 v-model:pageId="pageId" v-model:pageSize="pageSize" />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import Child1 from './Child1.vue';
+import Child2 from './Child2.vue';
+
+const dataInFather = ref(1000);
+
+// function handler(dataFromChild) {
+//   dataInFather.value = dataFromChild;
+// }
+
+const pageId = ref(1);
+const pageSize = ref(3);
+</script>
+```
+
+```vue
+<!-- 在子组件2中（子组件1中同理） -->
+<template>
+  <div class="child2">
+    <h2>In Child Component 2</h2>
+    <button @click="update">update data</button>
+    <hr>
+    page id: {{ pageId }}, page size: {{ pageSize }}
+  </div>
+</template>
+
+<script setup lang="ts">
+const props = defineProps(['pageId', 'pageSize']);
+const $emit = defineEmits(['update:pageId', 'update:pageSize']);
+
+function update() {
+  $emit('update:pageId', props.pageId + 1);
+  $emit('update:pageSize', props.pageSize + 3);
+}
+</script>
+```
